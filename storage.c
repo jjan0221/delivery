@@ -58,7 +58,18 @@ static void initStorage(int x, int y) {
 //int x, int y : cell for password check
 //return : 0 - password is matching, -1 - password is not matching
 static int inputPasswd(int x, int y) {
+	char input_Passwd;
+	
 	printf("input password for (%d, %d) : ", x, y);
+	scanf("%s", input_Passwd);
+	
+	//if inputPasswd!=passwd return -1
+	if(input_Passwd != passwd[])
+		return -1;
+		
+	//if x==passwd return 0
+	if(input_Passwd == passwd[])
+		return 0;
 }
 
 
@@ -82,7 +93,7 @@ int str_backupSystem(char* filepath) {
 int str_createSystem(char* filepath) {
 
 	int *fp;
-	int c;
+	char c;
 	//filepath open
 	fp = fopen(filepath, "r");
 	
@@ -99,10 +110,12 @@ int str_createSystem(char* filepath) {
 	//read past contexts of the delivery system
 	while ( (c = fgetc(fp)) != EOF)
 	{
-		fscanf(fp, "%d %d", &storage_t.building, &storage_t.room);
+		fscanf(fp, "%d %d", deliverySystem[x][y].building, deliverySystem[x][y].room);
+		storedCnt++;
 	};
 	
 	fclose(fp);
+	
 	return 0;
 }
 
