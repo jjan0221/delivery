@@ -58,7 +58,7 @@ static void initStorage(int x, int y) {
 //int x, int y : cell for password check
 //return : 0 - password is matching, -1 - password is not matching
 static int inputPasswd(int x, int y) {
-	
+	printf("input password for (%d, %d) : ", x, y);
 }
 
 
@@ -80,7 +80,30 @@ int str_backupSystem(char* filepath) {
 //char* filepath : filepath and name to read config parameters (row, column, master password, past contexts of the delivery system
 //return : 0 - successfully created, -1 - failed to create the system
 int str_createSystem(char* filepath) {
+
+	int *fp;
+	int c;
+	//filepath open
+	fp = fopen(filepath, "r");
 	
+	//if filepath not open
+	if(fp == NULL)	
+		return -1;
+	
+	//read row, column, master password
+	fscanf(fp, "%d %d", &systemSize[0], &systemSize[1]);
+	fgets(fp, "%s", masterPassword[PASSWD_LEN+1]);
+	
+	printf("%s \n", masterPassword[PASSWD_LEN+1]);
+	
+	//read past contexts of the delivery system
+	while ( (c = fgetc(fp)) != EOF)
+	{
+		fscanf(fp, "%d %d", &storage_t.building, &storage_t.room);
+	};
+	
+	fclose(fp);
+	return 0;
 }
 
 //free the memory of the deliverySystem 
@@ -165,6 +188,7 @@ int str_extractStorage(int x, int y) {
 //int nBuilding, int nRoom : my building/room numbers
 //return : number of packages that the storage system has
 int str_findStorage(int nBuilding, int nRoom) {
+	int cnt;
 	
 	return cnt;
 }
