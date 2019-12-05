@@ -12,10 +12,10 @@
   char passwd[] : password setting (4 characters)
   char *contents : package context (message string)
 */
-typedef struct {
+typedef struct storage_t{
 	int building;
 	int room;
-	int cnt;
+	int cnt; //택배 유무
 	char passwd[PASSWD_LEN+1];
 	
 	char *context;
@@ -51,7 +51,15 @@ static void printStorageInside(int x, int y) {
 //and allocate memory to the context pointer
 //int x, int y : cell coordinate to be initialized
 static void initStorage(int x, int y) {
+	int i, j;
 	
+	for(i=0;i<systemSize[0];i++)
+	{
+		for(j=0;j<systemSize[1];j++)
+			deliverySystem[i][j].context = (char *)malloc(100 * sizeof(char));
+	}
+	
+	deliverySystem[x][y].cnt = 0;
 }
 
 //get password input and check if it is correct for the cell (x,y)
@@ -63,12 +71,16 @@ static int inputPasswd(int x, int y) {
 	printf("input password for (%d, %d) : ", x, y);
 	scanf("%s", input_Passwd);
 	
-	//if inputPasswd!=passwd return -1
-	if(input_Passwd != passwd[])
+	//if inputPasswd != passwd -> return -1
+	if(strcmp(input_Passwd,deliverySystem[x][y].passwd) != 0)
 		return -1;
 		
-	//if x==passwd return 0
-	if(input_Passwd == passwd[])
+	//if inputPasswd == passwd -> return 0
+	if(strcmp(input_Passwd,deliverySystem[x][y].passwd) == 0)
+		return 0;
+	
+	//if inputPasswd == masterPassword	-> return 0
+	if(strcmp(input_Passwd,masterPassword == 0))
 		return 0;
 }
 
@@ -94,6 +106,10 @@ int str_createSystem(char* filepath) {
 
 	int *fp;
 	char c;
+	int input_row = 0;
+	int input_column = 0;
+	int i, j;
+	
 	//filepath open
 	fp = fopen(filepath, "r");
 	
@@ -103,16 +119,44 @@ int str_createSystem(char* filepath) {
 	
 	//read row, column, master password
 	fscanf(fp, "%d %d", &systemSize[0], &systemSize[1]);
-	fgets(fp, "%s", masterPassword[PASSWD_LEN+1]);
+	fscanf(fp, "%s", masterPassword);
 	
-	printf("%s \n", masterPassword[PASSWD_LEN+1]);
+	deliverySystem = (struct storage_t **)malloc(sizeof(struct storage_t*));
+	for(i=0;i<systemSize[0];i++)
+		deliverySystem[i] = (struct storage_t **)malloc(sizeof(struct storage_t*));
 	
-	//read past contexts of the delivery system
-	while ( (c = fgetc(fp)) != EOF)
+	for(i=0;i<systemSize[0];i++)
 	{
-		fscanf(fp, "%d %d", deliverySystem[x][y].building, deliverySystem[x][y].room);
+		for(j=0;j<systemSize[1];j++)
+			deliverySystem[i][j].context = (char *)malloc(100 * sizeof(char));
+	}
+	
+	//deliverySystem, cnt initialized
+	for(i=0;i<systemSize[0];i++)
+	{
+		for(j=0;j<systemSize[1];j++)
+		{
+			deliverySystem[i][j].cnt = 0;
+		}
+	}
+
+	//read past contexts of the delivery system
+	//if stored > storedCnt++
+	while((c = fgetc(fp)) != EOF)
+	{	
+		//input_row, input_column
+		fscanf(fp, "%d %d", &input_row, &input_column); 
+		// building, room
+		fscanf(fp, "%d %d", &deliverySystem[input_row][input_column].building, &deliverySystem[input_row][input_column].room);
+		// passwd
+		fscanf(fp, "%s", deliverySystem[input_row][input_column].passwd);
+		// context
+		fscanf(fp, "%s", deliverySystem[input_row][input_column].context);
+		
+		deliverySystem[input_row][input_column].cnt = 1;
+		
 		storedCnt++;
-	};
+	}
 	
 	fclose(fp);
 	
@@ -171,7 +215,7 @@ int str_checkStorage(int x, int y) {
 		return -1;
 	}
 	
-	return deliverySystem[x][y].cnt;	
+	return deliverySystem[x][y].cnt;
 }
 
 
@@ -184,6 +228,8 @@ int str_checkStorage(int x, int y) {
 //return : 0 - successfully put the package, -1 - failed to put
 int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_SIZE+1], char passwd[PASSWD_LEN+1]) {
 	
+	deliverySystem[x][y].cnt = 1;
+	storedCnt++;
 }
 
 
@@ -193,6 +239,17 @@ int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_S
 //int x, int y : coordinate of the cell to extract
 //return : 0 - successfully extracted, -1 = failed to extract
 int str_extractStorage(int x, int y) {
+	if (inputPasswd(x, y) == 0)
+	{
+		initStorage(x, y);
+		storedCnt--;
+		return 0;
+	}
+	
+	if (inputPasswd(x,y) != 0)
+	{
+		return -1;
+	}
 	
 }
 
