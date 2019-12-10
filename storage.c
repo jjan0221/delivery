@@ -106,29 +106,31 @@ int str_backupSystem(char* filepath) {
 	}
 	else
 	{
-		fprintf(fp, "%d %d", systemSize[0], systemSize[1]);
-		fprintf(fp, "%s", masterPassword);
+		fprintf(fp, "%d %d\n", systemSize[0], systemSize[1]);
+		fprintf(fp, "%s\n", masterPassword);
 		
-			for(x=0; x<systemSize[0]; x++)
-			{	
-				for(y=0; y<systemSize[1]; y++)
-				{
-					if(deliverySystem[x][y].cnt == 1);
-					//input_row, input_column
-					fprintf(fp, "%d %d", x, y); 
+		for(x=0; x<systemSize[0]; x++)
+		{	
+			for(y=0; y<systemSize[1]; y++)
+			{
+				if(deliverySystem[x][y].cnt == 1)
+				{	
+					// x, y
+					fprintf(fp, "%d %d ", x, y); 
 					// building, room
-					fprintf(fp, "%d %d", deliverySystem[x][y].building, deliverySystem[x][y].room);
+					fprintf(fp, "%d %d ", deliverySystem[x][y].building, deliverySystem[x][y].room);
+					//fprintf(fp, "/// cnt %d ", deliverySystem[x][y].cnt);
 					// passwd
-					fprintf(fp, "%s", deliverySystem[x][y].passwd);
+					fprintf(fp, "%s ", deliverySystem[x][y].passwd);
 					// context
 					fprintf(fp, "%s\n", deliverySystem[x][y].context);
+				}
 			}
+		}
 	}
-
 	fclose(fp);
 	
 	return 0;
-	}
 }
 
 
@@ -155,19 +157,22 @@ int str_createSystem(char* filepath) {
 	fscanf(fp, "%d %d", &systemSize[0], &systemSize[1]);
 	fscanf(fp, "%s", masterPassword);
 	
+	
+	//deliverySystem > malloc
 	deliverySystem = (struct storage_t **)malloc(systemSize[0] * sizeof(struct storage_t*));
 	for(i=0;i<systemSize[0];i++)
 		{
 			deliverySystem[i] = (struct storage_t *)malloc(systemSize[1] * sizeof(struct storage_t));
 		}
-		
+	
+	//deliverySystem.context > malloc	
 	for(i=0;i<systemSize[0];i++)
 	{
 		for(j=0;j<systemSize[1];j++)
 			deliverySystem[i][j].context = (char *)malloc(100 * sizeof(char));
 	}
 	
-	//deliverySystem, cnt initialized
+	//deliverySystem.cnt initialized
 	for(i=0;i<systemSize[0];i++)
 	{
 		for(j=0;j<systemSize[1];j++)
@@ -202,15 +207,19 @@ int str_createSystem(char* filepath) {
 //free the memory of the deliverySystem 
 void str_freeSystem(void) {
 	int i, j;
-	
-	free(deliverySystem);
-	for(i=0;i<systemSize[0];i++)
-		free(deliverySystem[i]);
+
 	for(i=0;i<systemSize[0];i++)
 	{
 		for(j=0;j<systemSize[1];j++)
 			free(deliverySystem[i][j].context);
 	}
+	
+	for(i=0;i<systemSize[0];i++)
+		free(deliverySystem[i]);
+	
+	free(deliverySystem);
+
+
 }
 
 //print the current state of the whole delivery system (which cells are occupied and the destination of the each occupied cells)
@@ -270,7 +279,7 @@ int str_checkStorage(int x, int y) {
 int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_SIZE+1], char passwd[PASSWD_LEN+1]) {
 	deliverySystem[x][y].building = nBuilding;
 	deliverySystem[x][y].room = nRoom;
-	deliverySystem[x][y].passwd[PASSWD_LEN+1] = passwd;
+	deliverySystem[x][y].passwd[PASSWD_LEN+1] = passwd[PASSWD_LEN+1];
 	deliverySystem[x][y].context = msg;
 	deliverySystem[x][y].cnt = 1;
 	storedCnt++;
@@ -290,7 +299,6 @@ int str_extractStorage(int x, int y) {
 	{	
 		return -1;
 	}
-	
 	
 	else
 	{	
