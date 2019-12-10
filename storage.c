@@ -15,7 +15,7 @@
 typedef struct storage_t{
 	int building;
 	int room;
-	int cnt; //택배 유무
+	int cnt; 
 	char passwd[PASSWD_LEN+1];
 	
 	char *context;
@@ -52,6 +52,11 @@ static void printStorageInside(int x, int y) {
 //int x, int y : cell coordinate to be initialized
 static void initStorage(int x, int y) {
 	int i, j;
+	deliverySystem[x][y].building = NULL;
+	deliverySystem[x][y].room = NULL;
+	deliverySystem[x][y].context = NULL;
+	for(i=0; deliverySystem[x][y].passwd[i] != NULL; i++)
+		deliverySystem[x][y].passwd[i] = NULL;
 
 	deliverySystem[x][y].cnt = 0;	
 }
@@ -277,9 +282,12 @@ int str_checkStorage(int x, int y) {
 //char passwd[] : password string (4 characters)
 //return : 0 - successfully put the package, -1 - failed to put
 int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_SIZE+1], char passwd[PASSWD_LEN+1]) {
+	int i;
+	
 	deliverySystem[x][y].building = nBuilding;
 	deliverySystem[x][y].room = nRoom;
-	deliverySystem[x][y].passwd[PASSWD_LEN+1] = passwd[PASSWD_LEN+1];
+	for(i=0; passwd[i] != 0; i++)
+		deliverySystem[x][y].passwd[i] = passwd[i];
 	deliverySystem[x][y].context = msg;
 	deliverySystem[x][y].cnt = 1;
 	storedCnt++;
@@ -328,3 +336,4 @@ int str_findStorage(int nBuilding, int nRoom) {
 	}	
 	return cnt;
 }
+
