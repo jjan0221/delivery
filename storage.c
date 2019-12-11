@@ -52,11 +52,11 @@ static void printStorageInside(int x, int y) {
 //int x, int y : cell coordinate to be initialized
 static void initStorage(int x, int y) {
 	int i, j;
-	deliverySystem[x][y].building = NULL;
-	deliverySystem[x][y].room = NULL;
+	deliverySystem[x][y].building = 0;
+	deliverySystem[x][y].room = 0;
 	deliverySystem[x][y].context = NULL;
-	for(i=0; deliverySystem[x][y].passwd[i] != NULL; i++)
-		deliverySystem[x][y].passwd[i] = NULL;
+	for(i=0; deliverySystem[x][y].passwd[i] != 0; i++)
+		deliverySystem[x][y].passwd[i] = 0;
 
 	deliverySystem[x][y].cnt = 0;	
 }
@@ -71,20 +71,18 @@ static int inputPasswd(int x, int y) {
 	scanf("%s", input_Passwd);
 	
 	//if inputPasswd != passwd -> return -1
-	if(strcmp(input_Passwd,deliverySystem[x][y].passwd) != 0)
+	
+	//if inputPasswd == passwd -> return 0
+	//if inputPasswd == masterPassword	-> return 0
+	if((strcmp(input_Passwd,deliverySystem[x][y].passwd) == 0) || (strcmp(input_Passwd,masterPassword) == 0))
+	{
+		return 0;
+	}
+	//if inputPasswd != masterPassword	-> return -1
+	//if inputPasswd != passwd -> return -1
+	else
 	{
 		return -1;
-	}
-	//if inputPasswd == passwd -> return 0
-	else if(strcmp(input_Passwd,deliverySystem[x][y].passwd) == 0)
-	{
-		return 0;
-	}
-	//if inputPasswd == masterPassword	-> return 0
-	
-	else if(strcmp(input_Passwd,masterPassword) == 0)
-	{
-		return 0;
 	}
 }
 
@@ -124,7 +122,6 @@ int str_backupSystem(char* filepath) {
 					fprintf(fp, "%d %d ", x, y); 
 					// building, room
 					fprintf(fp, "%d %d ", deliverySystem[x][y].building, deliverySystem[x][y].room);
-					//fprintf(fp, "/// cnt %d ", deliverySystem[x][y].cnt);
 					// passwd
 					fprintf(fp, "%s ", deliverySystem[x][y].passwd);
 					// context
@@ -198,7 +195,7 @@ int str_createSystem(char* filepath) {
 		fscanf(fp, "%s", deliverySystem[input_row][input_column].passwd);
 		// context
 		fscanf(fp, "%s", deliverySystem[input_row][input_column].context);
-		
+		// cnt
 		deliverySystem[input_row][input_column].cnt = 1;
 		
 		storedCnt++;
@@ -223,8 +220,6 @@ void str_freeSystem(void) {
 		free(deliverySystem[i]);
 	
 	free(deliverySystem);
-
-
 }
 
 //print the current state of the whole delivery system (which cells are occupied and the destination of the each occupied cells)
@@ -284,15 +279,22 @@ int str_checkStorage(int x, int y) {
 int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_SIZE+1], char passwd[PASSWD_LEN+1]) {
 	int i;
 	
-	deliverySystem[x][y].building = nBuilding;
-	deliverySystem[x][y].room = nRoom;
-	for(i=0; passwd[i] != 0; i++)
-		deliverySystem[x][y].passwd[i] = passwd[i];
-	deliverySystem[x][y].context = msg;
-	deliverySystem[x][y].cnt = 1;
-	storedCnt++;
+	//if deliverySystem.cnt != 0 -> return -1 
+	if(deliverySystem[x][y].cnt != 0)
+		return -1;
 	
+	//if deliverySystem.cnt == 0 -> put the package(building, room, passwd, context) & return 0 
+	else	
+	{
+		deliverySystem[x][y].building = nBuilding;
+		deliverySystem[x][y].room = nRoom;
+		for(i=0; passwd[i] != 0; i++)
+			deliverySystem[x][y].passwd[i] = passwd[i];
+		deliverySystem[x][y].context = msg;
+		deliverySystem[x][y].cnt = 1;
+		storedCnt++;
 	return 0;
+	}
 }
 
 
@@ -303,11 +305,13 @@ int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_S
 //return : 0 - successfully extracted, -1 = failed to extract
 int str_extractStorage(int x, int y) {
 	
+	//if passwd is wrong -> return -1
 	if (inputPasswd(x,y) != 0)
 	{	
 		return -1;
 	}
 	
+	//if passwd is correct -> extract the storage & return 0
 	else
 	{	
 		initStorage(x,y);
@@ -325,6 +329,9 @@ int str_extractStorage(int x, int y) {
 int str_findStorage(int nBuilding, int nRoom) {
 	int cnt = 0;
 	int x, y;
+	
+	//find the package from the storage
+	//if find the package from the storage -> cnt++
 	for (x=0; x<systemSize[0]; x++)
 	{
 		for(y=0; y<systemSize[1]; y++)
