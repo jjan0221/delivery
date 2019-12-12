@@ -110,7 +110,7 @@ int str_backupSystem(char* filepath) {
 	else
 	{
 		fprintf(fp, "%d %d\n", systemSize[0], systemSize[1]);
-		fprintf(fp, "%s\n", masterPassword);
+		fprintf(fp, "%s", masterPassword);
 		
 		for(x=0; x<systemSize[0]; x++)
 		{	
@@ -119,13 +119,13 @@ int str_backupSystem(char* filepath) {
 				if(deliverySystem[x][y].cnt == 1)
 				{	
 					// x, y
-					fprintf(fp, "%d %d ", x, y); 
+					fprintf(fp, "\n%d %d ", x, y); 
 					// building, room
 					fprintf(fp, "%d %d ", deliverySystem[x][y].building, deliverySystem[x][y].room);
 					// passwd
 					fprintf(fp, "%s ", deliverySystem[x][y].passwd);
 					// context
-					fprintf(fp, "%s\n", deliverySystem[x][y].context);
+					fprintf(fp, "%s", deliverySystem[x][y].context);
 				}
 			}
 		}
@@ -290,11 +290,13 @@ int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_S
 		deliverySystem[x][y].room = nRoom;
 		for(i=0; passwd[i] != 0; i++)
 			deliverySystem[x][y].passwd[i] = passwd[i];
-		deliverySystem[x][y].context = msg;
+		for(i=0; msg[i] != 0; i++)	
+			deliverySystem[x][y].context[i] = msg[i];
 		deliverySystem[x][y].cnt = 1;
-		storedCnt++;
+		storedCnt = 1;
 	return 0;
 	}
+
 }
 
 
